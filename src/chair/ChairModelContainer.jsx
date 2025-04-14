@@ -7,7 +7,7 @@ const ChairModelContainer = () => {
   return (
     <div className="h-[500px] w-full mt-20">
       <Canvas
-        xr
+        xr="true"
         onCreated={({ gl }) => {
           gl.xr.enabled = true;
         }}
