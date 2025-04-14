@@ -26,7 +26,7 @@ const ARControls = () => {
   }, [gl]);
 
   return (
-    <div>
+    <div className="ar-controls-container">
       {arAvailable && (
         <div className="ar-instructions">
           <button
