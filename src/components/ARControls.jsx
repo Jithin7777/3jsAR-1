@@ -1,48 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useThree } from "@react-three/fiber";
 import { ARButton } from "three/examples/jsm/webxr/ARButton";
+import { Html } from "@react-three/drei";
 
 const ARControls = () => {
   const { gl } = useThree();
-  const [arAvailable, setArAvailable] = useState(false);
+  const [arSupported, setArSupported] = useState(false);
+  const arButtonRef = useRef(null);
 
   useEffect(() => {
     gl.xr.enabled = true;
 
-    const button = ARButton.createButton(gl, {
-      requiredFeatures: ["hit-test"],
-    });
-
-    // Check if WebXR is available, and toggle AR UI accordingly
     if (navigator.xr) {
-      setArAvailable(true);
+      navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
+        setArSupported(supported);
+
+        if (supported && arButtonRef.current) {
+          const button = ARButton.createButton(gl, {
+            requiredFeatures: ["hit-test"],
+          });
+
+          if (!arButtonRef.current.hasChildNodes()) {
+            arButtonRef.current.appendChild(button);
+          }
+        }
+      });
     }
-
-    document.body.appendChild(button);
-
-    return () => {
-      document.body.removeChild(button); // Clean up
-    };
   }, [gl]);
 
   return (
-    <div className="ar-controls-container">
-      {arAvailable && (
-        <div className="ar-instructions">
-          <button
-            className="ar-button"
-            onClick={() => {
-              // Optional: Add any extra behavior on click if needed
-            }}
-          >
-            Tap to View in AR
-          </button>
-          <div className="ar-text">
-            <p>Scan your environment to view the model in augmented reality!</p>
+    <>
+      {arSupported && (
+        <Html position={[0, 1.5, -2]} center distanceFactor={10}>
+          <div className="ar-ui">
+            <div ref={arButtonRef} />
+            <div className="ar-instructions">
+              <p>Scan your environment to view the model in AR!</p>
+            </div>
           </div>
-        </div>
+        </Html>
       )}
-    </div>
+    </>
   );
 };
 
