@@ -6,14 +6,22 @@ const ARControls = () => {
   const arButtonRef = useRef(null);
 
   useEffect(() => {
-    // Check if WebXR is available
     if (navigator.xr) {
       navigator.xr.isSessionSupported("immersive-ar").then((supported) => {
-        setArSupported(supported);
+        if (supported) {
+          navigator.xr.requestSession("immersive-ar").then((session) => {
+            console.log("AR session started!");
+            // Further code for handling the session
+          }).catch(err => {
+            console.error("Error starting AR session:", err);
+          });
+        } else {
+          console.log("AR not supported on this device.");
+        }
       });
     }
   }, []);
-
+  
   return (
     <>
       {arSupported && (

@@ -19,7 +19,7 @@ const ChairModelContainer = () => {
         const xrButton = ARButton.createButton(gl, {
           requiredFeatures: ["hit-test"], // Hit testing allows surface detection
         });
-        
+
         // Append the AR button to the DOM
         document.body.appendChild(xrButton);
 
