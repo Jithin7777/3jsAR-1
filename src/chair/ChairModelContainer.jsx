@@ -1,51 +1,63 @@
 import { Canvas } from "@react-three/fiber";
-import React, { Suspense, useRef, useEffect } from "react";
+import React, { Suspense, useEffect, useRef } from "react";
 import { ChairModel } from "./ChairModel";
 import { OrbitControls, Stage } from "@react-three/drei";
-import ARControls from "../components/ARControls";
 import { ARButton } from "three/examples/jsm/webxr/ARButton";
+import ARControls from "../components/ARControls";
 
 const ChairModelContainer = () => {
-  const canvasRef = useRef();
+  const canvasRef = useRef(null);
 
-  // This hook will initialize the WebXR environment
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const gl = canvas.getContext("webgl2");
-
-      // Initialize WebXR if supported
-      if (gl && navigator.xr) {
-        const xrButton = ARButton.createButton(gl, {
-          requiredFeatures: ["hit-test"], // Hit testing allows surface detection
-        });
-
-        // Append the AR button to the DOM
-        document.body.appendChild(xrButton);
-
-        // Cleanup function to remove the AR button when the component is unmounted
-        return () => {
-          document.body.removeChild(xrButton);
-        };
-      }
+    if (!canvas) return;
+  
+    const renderer = canvas.__reactThreeFiber?.gl;
+    if (!renderer) return;
+  
+    renderer.xr.enabled = true;
+  
+    const button = ARButton.createButton(renderer, {
+      requiredFeatures: ["hit-test"],
+    });
+  
+    // Append the AR button to the new container
+    const arButtonContainer = document.getElementById("ar-button-container");
+    if (arButtonContainer) {
+      arButtonContainer.appendChild(button);
+    } else {
+      // Fallback: append to body if the container is not found
+      document.body.appendChild(button);
     }
+  
+    // Clean up AR button on unmount
+    return () => {
+      if (button && button.parentElement) {
+        button.parentElement.removeChild(button);
+      }
+    };
   }, []);
-
+  
   return (
-    <div className="h-[500px] w-full mt-20">
-      <Canvas ref={canvasRef}>
-        <Suspense fallback="loading...">
-          <Stage environment="city">
-            <ChairModel position={[0, 0, -0.5]} scale={10} />
-          </Stage>
-          <OrbitControls enableZoom={false} />
-        </Suspense>
-
-        {/* AR Controls for showing AR button */}
-        <ARControls />
-      </Canvas>
-    </div>
-  );
+    <div className="h-screen w-full relative">
+    {/* Container for AR Button */}
+    <div id="ar-button-container" className="fixed bottom-4 left-4 z-50" />
+    
+    <Canvas
+      ref={canvasRef}
+      onCreated={({ gl }) => {
+        gl.xr.enabled = true;
+      }}
+    >
+      <Suspense fallback="Loading...">
+        <Stage environment="city">
+          <ChairModel position={[0, 0, 0]} scale={1} />
+        </Stage>
+        <OrbitControls enableZoom={false} />
+      </Suspense>
+      <ARControls />
+    </Canvas>
+  </div>  );
 };
 
 export default ChairModelContainer;
