@@ -10,15 +10,20 @@ const ChairModelContainer = () => {
 
   // This hook will initialize the WebXR environment
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
+    const canvas = canvasRef.current;
+    if (canvas) {
       const gl = canvas.getContext("webgl2");
+
+      // Initialize WebXR if supported
       if (gl && navigator.xr) {
         const xrButton = ARButton.createButton(gl, {
-          requiredFeatures: ["hit-test"],
+          requiredFeatures: ["hit-test"], // Hit testing allows surface detection
         });
+        
+        // Append the AR button to the DOM
         document.body.appendChild(xrButton);
 
+        // Cleanup function to remove the AR button when the component is unmounted
         return () => {
           document.body.removeChild(xrButton);
         };
@@ -35,6 +40,8 @@ const ChairModelContainer = () => {
           </Stage>
           <OrbitControls enableZoom={false} />
         </Suspense>
+
+        {/* AR Controls for showing AR button */}
         <ARControls />
       </Canvas>
     </div>
